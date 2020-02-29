@@ -593,7 +593,7 @@ void IdentifyVersion (void)
     sprintf(doomuwad, "%s/doomu.wad", doomwaddir);
     
     // Registered.
-    doomwad = malloc(strlen(doomwaddir)+1+8+1);
+    doomwad = malloc(strlen(doomwaddir)+1+9+1);
     sprintf(doomwad, "%s/doom.wad", doomwaddir);
     
     // Shareware.

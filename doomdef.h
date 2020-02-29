@@ -116,6 +116,7 @@ typedef enum
 //(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
 
+#define POINTER_SIZE sizeof(void*)
 
 
 // The maximum number of players, multiplayer/networking.
