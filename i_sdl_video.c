@@ -55,6 +55,7 @@ rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #define SDL_BPP 8
 
 SDL_Surface* screen = NULL;
+SDL_Surface* virt_screen = NULL;
 int		X_width;
 int		X_height;
 
@@ -85,8 +86,8 @@ void I_InitGraphics(void)
     if (M_CheckParm("-4"))
 	multiply = 4;
 
-    X_width = SCREENWIDTH * multiply;
-    X_height = SCREENHEIGHT * multiply;
+    X_width = PHYS_SCREENWIDTH * multiply;
+    X_height = PHYS_SCREENHEIGHT * multiply;
 
     if(SDL_Init(SDL_INIT_EVERYTHING) == -1) {
     	I_Error("SDL initializing error");
@@ -98,11 +99,10 @@ void I_InitGraphics(void)
     	I_Error("SDL setting video mode error");
     }
 
-    if (multiply == 1)
-    	screens[0] = (byte*) (screen->pixels);
-    else
-    	I_Error("Unsupported Mode");
-
+	virt_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 
+									SCREENWIDTH, SCREENHEIGHT, SDL_BPP,
+									0, 0, 0, 0);
+   	screens[0] = (byte*) (virt_screen->pixels);
 }
 
 
@@ -110,6 +110,7 @@ void I_ShutdownGraphics(void)
 {
   // Freeing SDL screen
   SDL_FreeSurface(screen);
+  SDL_FreeSurface(virt_screen);
 }
 
 void I_UpdateNoBlit (void)
@@ -117,8 +118,40 @@ void I_UpdateNoBlit (void)
 	// Do nothing
 }
 
+//////////////////////////////////////////////////////////////////////////////
+#define PIXEL(_image,_x,_y) &((uint8_t*)(_image)->pixels)[((_y)*(_image)->w)+(_x)]
+#define SIZEOF_ARRAY(x) (sizeof(x) / sizeof(x[1]))
+static void scale(SDL_Surface *src, SDL_Surface *dst){
+	/*
+	576 = (4*2+1)*64
+	516 ~= 500 = (5*3+5*2)*20
+	 */
+	static const int xmap[] = {2, 2, 2, 2, 1};
+	static const int ymap[] = {3, 2, 3, 2, 3, 2, 3, 2, 3, 2};
+
+	int xi, yi;
+    int xs, ys;
+	int xd, yd;
+	int x, y;
+    for(yi = yd = ys = 0; ys < SCREENHEIGHT; ++ys) {
+	    for(xi = xd = xs = 0; xs < SCREENWIDTH; ++xs) {
+			memset(PIXEL(dst, xd, yd), *PIXEL(src, xs, ys), xmap[xi]);
+			xd += xmap[xi];
+			xi = (xi + 1) % SIZEOF_ARRAY(xmap);
+    	}
+		for (y = 1; y < ymap[yi]; ++y)
+		{
+			memcpy(PIXEL(dst, 0, yd+y), PIXEL(dst, 0, yd), PHYS_SCREENWIDTH);
+		}
+		yd += ymap[yi];
+		yi = (yi + 1) % SIZEOF_ARRAY(ymap);
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
 void I_FinishUpdate (void)
 {
+ 	//SDL_BlitSurface(virt_screen, NULL, screen, NULL);
+	scale(virt_screen, screen);
 	SDL_Flip(screen);
 }
 
@@ -157,6 +190,7 @@ void I_SetPalette (byte* palette)
 
 	    // store the colors to the current colormap
 	    SDL_SetColors(screen, colors, 0, 256);
+		SDL_SetColors(virt_screen, colors, 0, 256);
 
 	}
 }

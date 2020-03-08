@@ -96,6 +96,7 @@ typedef enum
 // It will not work dynamically, see visplanes.
 //
 #define	BASE_WIDTH		320
+//#define BASE_WIDTH	576
 
 // It is educational but futile to change this
 //  scaling e.g. to 2. Drawing of status bar,
@@ -103,6 +104,7 @@ typedef enum
 //  by the graphics.
 #define	SCREEN_MUL		1
 #define	INV_ASPECT_RATIO	0.625 // 0.75, ideally
+//#define INV_ASPECT_RATIO	0.896
 
 // Defines suck. C sucks.
 // C++ might sucks for OOP, but it sure is a better C.
@@ -111,8 +113,10 @@ typedef enum
 #define MAX_SCREEN_SIZE (MAX_SCREEN_BLOCKS - 3)
 
 #define SCREENWIDTH  320
+#define PHYS_SCREENWIDTH	576
 //SCREEN_MUL*BASE_WIDTH //320
 #define SCREENHEIGHT 200
+#define PHYS_SCREENHEIGHT 516
 //(int)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
 
